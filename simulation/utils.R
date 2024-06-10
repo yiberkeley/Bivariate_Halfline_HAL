@@ -1,8 +1,6 @@
 #in build, install
 library(devtools)
 library(hal9001)
-source("sim_data.R")
-source("sim_data_2.R")
 load_all()
 library(glmnet)
 library(dplyr)
@@ -23,7 +21,7 @@ library(doFuture)
 
 run_sim<-function(n,
                  seed,
-                 type,
+                 df,
                  nfolds,
                  undersmooth_type="cv_all",
                  basis_option="0_order",
@@ -36,21 +34,9 @@ run_sim<-function(n,
                  perc_sample_basis=0.05,
                  cvxr=T,
                  uniform_ratio=F){
-  set.seed(seed)
-  if(type=="ch"){datgen<-function(n){return(datgen_correlated_high_censoring(n))}}
-  if(type=="cl"){datgen<-function(n){return(datgen_correlated_low_censoring(n))}}
-  if(type=="cn"){datgen<-function(n){return(datgen_correlated_no_censoring(n))}}
-  if(type=="cnT"){datgen<-function(n){return(datgen_correlated_no_censoring_trunc(n))}}
 
-  if(type=="il"){datgen<-function(n){return(datgen_independent_low_censoring(n))}}
-  if(type=="ih"){datgen<-function(n){return(datgen_independent_high_censoring(n))}}
-  if(type=="in"){datgen<-function(n){return(datgen_independent_no_censoring(n))}}
-  if(type=="inT"){datgen<-function(n){return(datgen_independent_no_censoring_trunc(n))}}
 
-  if(type=="kn"){datgen<-function(n){return(datgen_knownIntensity_no_censoring(n,seed))}}
-  if(type=="knT"){datgen<-function(n){return(datgen_knownIntensity_no_censoring_trunc(n,seed))}}
-
-  data_full<-datgen(n)
+  data_full<-df
   data_obs<-data_full%>%select(tt1,delt1,tt2,delt2)
 
 

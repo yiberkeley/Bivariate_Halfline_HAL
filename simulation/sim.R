@@ -10,7 +10,7 @@ seed<-seed_vals[1]
   n=100
   res <- run_sim(n = n,
                  seed = seed,
-                 type = "cnT",
+                 df=df,
                  nfolds=3,
                  undersmooth_type="cv_all",
                  basis_option="0_order",
