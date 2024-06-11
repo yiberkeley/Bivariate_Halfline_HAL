@@ -8,6 +8,8 @@
 #rm(list=ls())
 
 library(dplyr)
+setwd("/Users/liyi/Documents/GitHub/Bivariate_Halfline_HAL/simulation")
+source("utils.R")
 
 datgen<-function(n){
   t1<-round(runif(n),4)
@@ -27,7 +29,7 @@ datgen<-function(n){
 norm_vec <- function(x){sqrt(crossprod(x))}
 
 ###START_CHANGE
-draw10<-function(position,start,num_draws){
+draw10<-function(position,start,num_draws,res){
   temp_result<-Rejection_Sample_DensityBased(coef_N1_initial = res[[1]],
                                 basis_list_N1_select = res[[2]],
                                 coef_N2_initial = res[[3]],
@@ -48,7 +50,7 @@ draw10<-function(position,start,num_draws){
   return(temp_result)
 }
 
-draw01<-function(position,start,num_draws){
+draw01<-function(position,start,num_draws,res){
   temp_result<-Rejection_Sample_DensityBased(coef_N1_initial = res[[1]],
                                              basis_list_N1_select = res[[2]],
                                              coef_N2_initial = res[[3]],
@@ -71,7 +73,6 @@ draw01<-function(position,start,num_draws){
 ###END_CHANGE
 
 density_EM_bivar <- function(df,nrep){
-
   ###START_CHANGE
   #Run the hal fit
   res <- run_sim(n = n,
@@ -91,6 +92,7 @@ density_EM_bivar <- function(df,nrep){
                  uniform_ratio=F)
   ###END_CHANGE
 
+  print("finished HAL fit")
   #set.seed(300);df<-datgen(50)
 
   df11<-filter(df, delt1==1&delt2==1)
@@ -109,7 +111,7 @@ density_EM_bivar <- function(df,nrep){
   dup.rows<-duplicated(dup.dat10)
   ###START_CHANGE
   df_temp<-as.data.frame(cbind(df10$tt1,df10$tt2))
-  draws10<-do.call(rbind,apply(df_temp,1,function(x){draw10(x[1],x[2],nrep-1)}))
+  draws10<-do.call(rbind,apply(df_temp,1,function(x){draw10(x[1],x[2],nrep-1,res)}))
   draws10<-draws10%>%arrange(id)
   dup.dat10$tt2[dup.rows]<-draws10$values
   dup.dat10$delt2[dup.rows]<-1
@@ -120,7 +122,7 @@ density_EM_bivar <- function(df,nrep){
   dup.rows<-duplicated(dup.dat01)
   ###START_CHANGE
   df_temp<-as.data.frame(cbind(df01$tt2,df01$tt1))
-  draws01<-do.call(rbind,apply(df_temp,1,function(x){draw01(x[1],x[2],nrep-1)}))
+  draws01<-do.call(rbind,apply(df_temp,1,function(x){draw01(x[1],x[2],nrep-1,res)}))
   draws01<-draws01%>%arrange(id)
   dup.dat01$tt1[dup.rows]<-draws01$values
   dup.dat01$delt1[dup.rows]<-1
@@ -136,6 +138,7 @@ density_EM_bivar <- function(df,nrep){
   dup.dat00$type[dup.rows]<-0
   dup.dat00$w[dup.rows]<-1/(nrep-1)
 
+  print("finished augmentation")
 
   aug.df<-rbind(df11,dup.dat10,dup.dat01,dup.dat00);
   full.df<-aug.df%>%filter(delt1==1&delt2==1)
@@ -314,13 +317,13 @@ norm_vec <- function(x){sqrt(crossprod(x))}
 
 
 n.vec<-c(seq(520,980,by=20))
-n.vec<-1950#seq(10,1950,by=50)
+n.vec<-100#seq(10,1950,by=50)
 nrep=4
 scaled.l2norm<-scaled.bias<-NULL
 for(ii in 1:length(n.vec)){
 
   n<-n.vec[ii]
-  nsim<-n/10
+  nsim<-10#n/10
 sim.1 <- vector("list", length = nsim)
 
 set.seed(320)
@@ -333,9 +336,11 @@ library(doParallel)#Load parallel library
 no_cores <- detectCores()-1 #Set number of cores
 cl <- makeCluster(no_cores)
 registerDoParallel((cl))
-
-results.list <- foreach(k =1:length(sim.1), .packages = c("MASS","dplyr")) %dopar%
-  tryCatch(density_EM_bivar(df = sim.1[[k]],nrep), error = function(e) {print(e); NA})
+###START_CHANGE
+# results.list <- foreach(k =1:length(sim.1), .packages = c("MASS","dplyr")) %dopar%
+#   tryCatch(density_EM_bivar(df = sim.1[[k]],nrep), error = function(e) {print(e); NA})
+results.list<-lapply(1:length(sim.1),function(x){density_EM_bivar(df = sim.1[[x]],nrep)})
+###END_CHANGE
 stopCluster(cl)
 temp<-as.data.frame(do.call(rbind,results.list))
 true.survival.df<-temp%>%dplyr::select(starts_with("true"))
