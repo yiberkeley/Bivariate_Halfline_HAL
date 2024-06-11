@@ -30,7 +30,8 @@ norm_vec <- function(x){sqrt(crossprod(x))}
 
 ###START_CHANGE
 draw10<-function(position,start,num_draws,res){
-  temp_result<-Rejection_Sample_DensityBased(coef_N1_initial = res[[1]],
+  # Change the name of the follow up function to "Rejection_Sample_DensityBased" if want to use bivariate density for the draw.
+  temp_result<-Rejection_Sample_CdfBased(coef_N1_initial = res[[1]],
                                 basis_list_N1_select = res[[2]],
                                 coef_N2_initial = res[[3]],
                                 basis_list_N2_select = res[[4]],
@@ -51,7 +52,8 @@ draw10<-function(position,start,num_draws,res){
 }
 
 draw01<-function(position,start,num_draws,res){
-  temp_result<-Rejection_Sample_DensityBased(coef_N1_initial = res[[1]],
+  # Change the name of the follow up function to "Rejection_Sample_DensityBased" if want to use bivariate density for the draw.
+  temp_result<-Rejection_Sample_CdfBased(coef_N1_initial = res[[1]],
                                              basis_list_N1_select = res[[2]],
                                              coef_N2_initial = res[[3]],
                                              basis_list_N2_select = res[[4]],
@@ -317,13 +319,13 @@ norm_vec <- function(x){sqrt(crossprod(x))}
 
 
 n.vec<-c(seq(520,980,by=20))
-n.vec<-100#seq(10,1950,by=50)
+n.vec<-1950#seq(10,1950,by=50)
 nrep=4
 scaled.l2norm<-scaled.bias<-NULL
 for(ii in 1:length(n.vec)){
 
   n<-n.vec[ii]
-  nsim<-10#n/10
+  nsim<-2#n/10
 sim.1 <- vector("list", length = nsim)
 
 set.seed(320)
