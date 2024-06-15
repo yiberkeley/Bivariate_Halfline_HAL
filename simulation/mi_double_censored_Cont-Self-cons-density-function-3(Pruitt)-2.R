@@ -39,7 +39,7 @@ draw10<-function(position,start,num_draws,res){
                                 basis_list_A1_select = res[[6]],
                                 coef_A2_initial =res[[7]],
                                 basis_list_A2_select = res[[8]],
-                                censoring=F,
+                                censoring_fit=F,
                                 half_line_position=position, #where the observed time is
                                 half_line_type="N2", #which the censored event is
                                 starting_of_half_line=start, # where the censored event happen
@@ -61,7 +61,7 @@ draw01<-function(position,start,num_draws,res){
                                              basis_list_A1_select = res[[6]],
                                              coef_A2_initial =res[[7]],
                                              basis_list_A2_select = res[[8]],
-                                             censoring=F,
+                                             censoring_fit=F,
                                              half_line_position=position, #where the observed time is
                                              half_line_type="N1", #which the censored event is
                                              starting_of_half_line=start, # where the censored event happen
@@ -87,7 +87,7 @@ density_EM_bivar <- function(df,nrep){
                  weight_option="no_tail_shrinkage",
                  penalty_type="usual",
                  undersmooth=F,
-                 censoring=F,
+                 censoring_fit=F,
                  perc_sample=0.05,
                  perc_sample_basis=0.05,
                  cvxr=T,

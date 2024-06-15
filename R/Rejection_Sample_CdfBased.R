@@ -4,7 +4,7 @@ Rejection_Sample_CdfBased<-function(coef_N1_initial,basis_list_N1_select,
                                         coef_N2_initial,basis_list_N2_select,
                                         coef_A1_initial,basis_list_A1_select,
                                         coef_A2_initial,basis_list_A2_select,
-                                        censoring,
+                                        censoring_fit,
                                         half_line_position,
                                         half_line_type,
                                         starting_of_half_line,
@@ -25,7 +25,7 @@ Rejection_Sample_CdfBased<-function(coef_N1_initial,basis_list_N1_select,
   col_index_temp<-unlist(lapply(basis_list_N2_select, `[[`, 1))
   val_temp<-unlist(lapply(basis_list_N2_select, `[[`, 2))
   N2_time_grid<-sort(unique(c(0,val_temp[col_index_temp==1|col_index_temp==4])))
-  if(censoring){
+  if(censoring_fit){
     #A1 jumping process
     col_index_temp<-unlist(lapply(basis_list_A1_select, `[[`, 1))
     val_temp<-unlist(lapply(basis_list_A1_select, `[[`, 2))

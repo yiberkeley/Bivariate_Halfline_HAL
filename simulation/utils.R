@@ -29,7 +29,7 @@ run_sim<-function(n,
                  weight_option="no_tail_shrinkage",
                  penalty_type="usual",
                  undersmooth=F,
-                 censoring=F,
+                 censoring_fit=F,
                  perc_sample=0.05,
                  perc_sample_basis=0.05,
                  cvxr=T,
@@ -65,7 +65,7 @@ run_sim<-function(n,
   repeated_data_collection<-repeated_data_func(data_obs,foldid,perc_sample,monitoring_time,censor_data_include=T,masking_option,weight_option)
   repeated_data_N1_2<-repeated_data_collection[[1]]
   repeated_data_N2_2<-repeated_data_collection[[2]]
-  if(censoring){
+  if(censoring_fit){
     repeated_data_A1_2<-repeated_data_collection[[3]]
     repeated_data_A2_2<-repeated_data_collection[[4]]
   }
@@ -77,46 +77,46 @@ run_sim<-function(n,
     #Augment the Repeated data with basis
     #Basis list set up for N1,A1
     basis_list_N1 <- enumerate_basis(repeated_data_N1_2%>%select(t,tt2_less_t,tt2_less_t_delt2,tt2_less_t_tt2),max_degree = 2,smoothness_orders = 0)
-    if(censoring){
+    if(censoring_fit){
       basis_list_A1 <- enumerate_basis(repeated_data_A1_2%>%select(t,tt2_less_t,tt2_less_t_delt2,tt2_less_t_tt2),max_degree = 2,smoothness_orders = 0)
     }
     #Subsample basis list
     basis_list_N1<-basis_list_N1[sample(1:length(basis_list_N1),floor(perc_sample_basis*length(basis_list_N1)),replace=FALSE)]
-    if(censoring){
+    if(censoring_fit){
       basis_list_A1<-basis_list_A1[sample(1:length(basis_list_A1),floor(perc_sample_basis*length(basis_list_A1)),replace=FALSE)]
     }
 
     #Basis list set up for N2
     basis_list_N2 <- enumerate_basis(repeated_data_N2_2%>%select(t,tt1_less_t,tt1_less_t_delt1,tt1_less_t_tt1),max_degree = 2,smoothness_orders = 0)
-    if(censoring){
+    if(censoring_fit){
       basis_list_A2 <- enumerate_basis(repeated_data_A2_2%>%select(t,tt1_less_t,tt1_less_t_delt1,tt1_less_t_tt1),max_degree = 2,smoothness_orders = 0)
     }
     #Subsample basis list
     basis_list_N2<-basis_list_N2[sample(1:length(basis_list_N2),floor(perc_sample_basis*length(basis_list_N2)),replace=FALSE)]
-    if(censoring){
+    if(censoring_fit){
       basis_list_A2<-basis_list_A2[sample(1:length(basis_list_A2),floor(perc_sample_basis*length(basis_list_A2)),replace=FALSE)]
     }
   }else if(basis_option=="1_order"){
     #Augment the Repeated data with basis
     #Basis list set up for N1,A1
     basis_list_N1 <- enumerate_basis(repeated_data_N1_2%>%select(t,tt2_less_t,tt2_less_t_delt2,tt2_less_t_tt2),max_degree = 2,smoothness_orders = 1)
-    if(censoring){
+    if(censoring_fit){
       basis_list_A1 <- enumerate_basis(repeated_data_A1_2%>%select(t,tt2_less_t,tt2_less_t_delt2,tt2_less_t_tt2),max_degree = 2,smoothness_orders = 1)
     }
     #Subsample basis list
     basis_list_N1<-basis_list_N1[sample(1:length(basis_list_N1),floor(perc_sample_basis*length(basis_list_N1)),replace=FALSE)]
-    if(censoring){
+    if(censoring_fit){
       basis_list_A1<-basis_list_A1[sample(1:length(basis_list_A1),floor(perc_sample_basis*length(basis_list_A1)),replace=FALSE)]
     }
 
     #Basis list set up for N2
     basis_list_N2 <- enumerate_basis(repeated_data_N2_2%>%select(t,tt1_less_t,tt1_less_t_delt1,tt1_less_t_tt1),max_degree = 2,smoothness_orders = 1)
-    if(censoring){
+    if(censoring_fit){
       basis_list_A2 <- enumerate_basis(repeated_data_A2_2%>%select(t,tt1_less_t,tt1_less_t_delt1,tt1_less_t_tt1),max_degree = 2,smoothness_orders = 1)
     }
     #Subsample basis list
     basis_list_N2<-basis_list_N2[sample(1:length(basis_list_N2),floor(perc_sample_basis*length(basis_list_N2)),replace=FALSE)]
-    if(censoring){
+    if(censoring_fit){
      basis_list_A2<-basis_list_A2[sample(1:length(basis_list_A2),floor(perc_sample_basis*length(basis_list_A2)),replace=FALSE)]
     }
   }
@@ -147,22 +147,22 @@ run_sim<-function(n,
   #Usual scenario
   if(penalty_type=="usual"){
     penalty.factor_N1<-rep(1,length(basis_list_N1))
-    if(censoring){
+    if(censoring_fit){
       penalty.factor_A1<-rep(1,length(basis_list_A1))
     }
     penalty.factor_N2<-rep(1,length(basis_list_N2))
-    if(censoring){
+    if(censoring_fit){
       penalty.factor_A2<-rep(1,length(basis_list_A2))
     }
   }
 
   if(penalty_type=="rep"){
     penalty.factor_N1<-penalty_rep_func(basis_list_N1)
-    if(censoring){
+    if(censoring_fit){
       penalty.factor_A1<-penalty_rep_func(basis_list_A1)
     }
     penalty.factor_N2<-penalty_rep_func(basis_list_N2)
-    if(censoring){
+    if(censoring_fit){
       penalty.factor_A2<-penalty_rep_func(basis_list_A2)
     }
   }
@@ -173,7 +173,7 @@ run_sim<-function(n,
     basis_list_N1<-reult_temp[[1]]
     penalty.factor_N1<-reult_temp[[2]]
 
-    if(censoring){
+    if(censoring_fit){
       #A1 jumping process
       reult_temp<-flex_t_func(data_obs,basis_list_A1,list_type="A1",basis_option)
       basis_list_A1<-reult_temp[[1]]
@@ -185,7 +185,7 @@ run_sim<-function(n,
     basis_list_N2<-reult_temp[[1]]
     penalty.factor_N2<-reult_temp[[2]]
 
-    if(censoring){
+    if(censoring_fit){
       #A2 jumping process
       reult_temp<-flex_t_func(data_obs,basis_list_A2,list_type="A2",basis_option)
       basis_list_A2<-reult_temp[[1]]
@@ -200,7 +200,7 @@ run_sim<-function(n,
     basis_list_N1<-reult_temp[[1]]
     penalty.factor_N1<-reult_temp[[2]]
 
-    if(censoring){
+    if(censoring_fit){
       #A1 jumping process
       reult_temp<-flex_tail_func(data_obs,basis_list_A1,list_type="A1",basis_option)
       basis_list_A1<-reult_temp[[1]]
@@ -212,7 +212,7 @@ run_sim<-function(n,
     basis_list_N2<-reult_temp[[1]]
     penalty.factor_N2<-reult_temp[[2]]
 
-    if(censoring){
+    if(censoring_fit){
       #A2 jumping process
       reult_temp<-flex_tail_func(data_obs,basis_list_A2,list_type="A2",basis_option)
       basis_list_A2<-reult_temp[[1]]
@@ -229,7 +229,7 @@ run_sim<-function(n,
   basic_info<-repeated_data_N1_2
   poisson_data_N1<-cbind(basic_info,as.matrix(basis_expansion))
 
-  if(censoring){
+  if(censoring_fit){
     basis_expansion<-make_design_matrix(as.matrix(repeated_data_A1_2%>%select(t,tt2_less_t,tt2_less_t_delt2,tt2_less_t_tt2)),basis_list_A1)
     basic_info<-repeated_data_A1_2
     poisson_data_A1<-cbind(basic_info,as.matrix(basis_expansion))
@@ -239,7 +239,7 @@ run_sim<-function(n,
   basic_info<-repeated_data_N2_2
   poisson_data_N2<-cbind(basic_info,as.matrix(basis_expansion))
 
-  if(censoring){
+  if(censoring_fit){
     basis_expansion<-make_design_matrix(as.matrix(repeated_data_A2_2%>%select(t,tt1_less_t,tt1_less_t_delt1,tt1_less_t_tt1)),basis_list_A2)
     basic_info<-repeated_data_A2_2
     poisson_data_A2<-cbind(basic_info,as.matrix(basis_expansion))
@@ -275,7 +275,7 @@ run_sim<-function(n,
         print("N1 undersmooth fit finished")
       }
 
-      if(censoring){
+      if(censoring_fit){
         #A1 jumping process
         result_temp<-poisson_cv_fit_func_all(cvxr,poisson_data_A1,basis_list_A1,nfolds,penalty.factor_A1,undersmooth,l1_norm_start=F,uniform_ratio)
         cv_selected_cv_risk_A1 <- result_temp[[1]]
@@ -310,7 +310,7 @@ run_sim<-function(n,
       }
 
 
-      if(censoring){
+      if(censoring_fit){
         #A2 jumping process
         result_temp<-poisson_cv_fit_func_all(cvxr,poisson_data_A2,basis_list_A2,nfolds,penalty.factor_A2,undersmooth,l1_norm_start=F,uniform_ratio)
         cv_selected_cv_risk_A2 <- result_temp[[1]]
@@ -334,10 +334,10 @@ run_sim<-function(n,
       basis_list_N1_select = basis_list_N1_select_list[[1]]
       coef_N2_initial = coef_N2_initial_list[[1]]
       basis_list_N2_select = basis_list_N2_select_list[[1]]
-      coef_A1_initial = ifelse(censoring,coef_A1_initial_list[[1]],-1)
-      basis_list_A1_select = ifelse(censoring,basis_list_A1_select_list[[1]],-1)
-      coef_A2_initial =ifelse(censoring, coef_A2_initial_list[[1]],-1)
-      basis_list_A2_select = ifelse(censoring,basis_list_A2_select_list[[1]],-1)
+      coef_A1_initial = ifelse(censoring_fit,coef_A1_initial_list[[1]],-1)
+      basis_list_A1_select = ifelse(censoring_fit,basis_list_A1_select_list[[1]],-1)
+      coef_A2_initial =ifelse(censoring_fit, coef_A2_initial_list[[1]],-1)
+      basis_list_A2_select = ifelse(censoring_fit,basis_list_A2_select_list[[1]],-1)
 
       result<-list()
       result[[1]]<-coef_N1_initial
